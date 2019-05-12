@@ -1,17 +1,17 @@
-import express from 'express'
-import cors from 'cors'
+import config from 'config'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
+import express from 'express'
 import querystring from 'querystring'
 import request from 'request'
 import uuid from 'uuid/v1'
-import config from 'config'
 
 const app = express()
 const clientId = 'a9333632c14a45b0ad372b5ab7a8afef'
 const clientSecret = config.get('clientSecret');
 const redirect_uri = 'http://localhost:8000/callback'
 const stateKey = 'spotify_auth_state'
-const scope = 'user-read-private user-read-email'
+const scope = 'user-read-private user-read-email user-read-playback-state'
 
 app.use(express.static(__dirname + './../public'))
    .use(cors())
@@ -38,19 +38,15 @@ app.get('/callback', function(req, res) {
   // your application requests refresh and access tokens
   // after checking the state parameter
 
-  var code = req.query.code || null
-  var state = req.query.state || null
-  var storedState = req.cookies ? req.cookies[stateKey] : null
+  const code = req.query.code
+  const state = req.query.state
+  const storedState = req.cookies ? req.cookies[stateKey] : null
 
-  if (state === null || state !== storedState) {
-      // you done fucked up
-    res.redirect('/#' +
-      querystring.stringify({
-        error: 'state_mismatch'
-      }))
+  if (!state || state !== storedState) {
+      res.status(500).send('Internal Server Error');
   } else {
     res.clearCookie(stateKey)
-    var authOptions = {
+    const authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       form: {
         code: code,
@@ -66,11 +62,11 @@ app.get('/callback', function(req, res) {
     request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
 
-        var access_token = body.access_token,
+        const access_token = body.access_token,
             refresh_token = body.refresh_token
 
-        var options = {
-          url: 'https://api.spotify.com/v1/me',
+        const options = {
+          url: 'https://api.spotify.com/v1/me/player',
           headers: { 'Authorization': 'Bearer ' + access_token },
           json: true
         }
@@ -87,10 +83,7 @@ app.get('/callback', function(req, res) {
             refresh_token: refresh_token
           }))
       } else {
-        res.redirect('/#' +
-          querystring.stringify({
-            error: 'invalid_token'
-          }))
+        res.status(500).send('Invalid Token');
       }
     })
   }
