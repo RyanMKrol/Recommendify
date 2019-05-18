@@ -27,8 +27,8 @@ function requestInitialAuth(httpResponse) {
 }
 
 // double handshake - we use a code passed back from Spotify to fetch the access tokens
-async function requestApiTokens(httpRequest, httpResponse) {
-  if (isInvalidState(httpRequest, httpResponse)) return
+function requestApiTokens(httpRequest, httpResponse) {
+  validateState(httpRequest, httpResponse)
 
   httpResponse.clearCookie(AUTH_STATE_KEY)
   const authOptions = buildAuthOptions(httpRequest)
@@ -45,16 +45,14 @@ async function requestApiTokens(httpRequest, httpResponse) {
   })
 }
 
-function isInvalidState(httpRequest, httpResponse) {
+function validateState(httpRequest, httpResponse) {
   const state = httpRequest.query.state
   const storedState = httpRequest.cookies ? httpRequest.cookies[AUTH_STATE_KEY] : null
 
   if (!state || state !== storedState) {
     httpResponse.status(500).send('Internal Server Error')
-    return true
+    throw new Error('Invalid Token provided')
   }
-
-  return false
 }
 
 function buildAuthOptions(httpRequest) {
