@@ -7,11 +7,12 @@ const CLIENT_ID = 'a9333632c14a45b0ad372b5ab7a8afef'
 const CLIENT_SECRET = config.get('clientSecret')
 const REDIRECT_URL = 'http://localhost:8000/callback'
 const AUTH_STATE_KEY = 'spotify_auth_state'
-const PERMISSIONS_LIST = 'user-read-private user-read-email user-read-playback-state playlist-modify-public playlist-modify-private'
+const PERMISSIONS_LIST = 'user-read-private playlist-modify-public playlist-modify-private'
 
 // user permits us to act on their behalf
 function requestInitialAuth(httpResponse) {
     const state = uuid()
+    const url = encodeURI(`https://accounts.spotify.com/authorize?${authoriseParams}`)
 
     httpResponse.cookie(AUTH_STATE_KEY, state)
 
@@ -23,7 +24,7 @@ function requestInitialAuth(httpResponse) {
       state: state
     })
 
-    httpResponse.redirect(`https://accounts.spotify.com/authorize?${authoriseParams}`)
+    httpResponse.redirect(url)
 }
 
 // double handshake - we use a code passed back from Spotify to fetch the access tokens
