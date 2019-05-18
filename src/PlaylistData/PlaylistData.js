@@ -1,4 +1,4 @@
-import requestLib from 'request-promise-native'
+import * as requestLib from './../RequestLib'
 import chunks from 'array.chunk'
 
 const MAX_SONGS_INTO_ARRAY = 100
@@ -19,8 +19,8 @@ async function createPlaylist(accessToken, userId) {
   }
 
   return requestLib.post(createPlaylistApiOptions)
-  .then((body) => {
-    return body.id
+  .then((response) => {
+    return response.body.id
   })
 }
 

@@ -56,7 +56,6 @@ app.get('/artistList', async function(req, res) {
 
 app.post('/processArtists', async function(req, res) {
   try {
-
     // parse the data from the form/site
     const accessToken = req.cookies[accessTokenCookieKey]
     const listItems = req.body.artistsInput
@@ -78,7 +77,7 @@ app.post('/processArtists', async function(req, res) {
     // fetch the top tracks for each artist ID
     const topTracks = await Promise.all(filteredArtistIds.map( async (artistId) => {
       const trackList = await trackLib.fetchArtistTopTracksData(accessToken, artistId)
-      return trackList.slice(0, tracksPerArtist)
+      return trackList ? trackList.slice(0, tracksPerArtist) : []
     }))
     const flattenedTopTracks = topTracks.flat()
 
@@ -91,9 +90,10 @@ app.post('/processArtists', async function(req, res) {
     // add tracks to this new playlist
     playlistLib.addTracksToPlaylist(accessToken, playlistId, flattenedTopTracks)
 
-    console.log('done!')
+    res.send('Playlist Created!')
   } catch(err) {
     console.log(err)
+    res.send(err)
   }
 })
 

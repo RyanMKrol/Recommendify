@@ -1,4 +1,4 @@
-import requestLib from 'request-promise-native'
+import * as requestLib from './../RequestLib'
 
 async function fetchArtistTopTracksData(accessToken, artistId) {
   const url = encodeURI(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?country=GB`)
@@ -11,9 +11,9 @@ async function fetchArtistTopTracksData(accessToken, artistId) {
   }
 
   return requestLib.get(topTracksApiOptions)
-  .then((body) => {
+  .then((response) => {
     try {
-      const jsonResponse = JSON.parse(body)
+      const jsonResponse = JSON.parse(response.body)
       return jsonResponse.tracks.map((item) => {
         return item.uri
       })

@@ -1,7 +1,8 @@
 import config from 'config'
 import querystring from 'querystring'
-import requestLib from 'request-promise-native'
 import uuid from 'uuid/v1'
+
+import * as requestLib from './../RequestLib'
 
 const CLIENT_ID = 'a9333632c14a45b0ad372b5ab7a8afef'
 const CLIENT_SECRET = config.get('clientSecret')
@@ -12,7 +13,6 @@ const PERMISSIONS_LIST = 'user-read-private playlist-modify-public playlist-modi
 // user permits us to act on their behalf
 function requestInitialAuth(httpResponse) {
     const state = uuid()
-    const url = encodeURI(`https://accounts.spotify.com/authorize?${authoriseParams}`)
 
     httpResponse.cookie(AUTH_STATE_KEY, state)
 
@@ -24,7 +24,7 @@ function requestInitialAuth(httpResponse) {
       state: state
     })
 
-    httpResponse.redirect(url)
+    httpResponse.redirect(`https://accounts.spotify.com/authorize?${authoriseParams}`)
 }
 
 // double handshake - we use a code passed back from Spotify to fetch the access tokens

@@ -1,4 +1,4 @@
-import requestLib from 'request-promise-native'
+import * as requestLib from './../RequestLib'
 
 async function fetchUserId(accessToken) {
   const userOptions = {
@@ -8,9 +8,9 @@ async function fetchUserId(accessToken) {
   }
 
   return requestLib.get(userOptions)
-  .then((body) => {
+  .then((response) => {
     try {
-      return body.id
+      return response.body.id
     } catch (_) {
       return
     }

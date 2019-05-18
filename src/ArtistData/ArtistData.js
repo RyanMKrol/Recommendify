@@ -1,4 +1,4 @@
-import requestLib from 'request-promise-native'
+import * as requestLib from './../RequestLib'
 
 async function fetchArtistData(accessToken, artistName) {
   const url = encodeURI(`https://api.spotify.com/v1/search?q=\"${artistName}\"&type=artist&limit=1`)
@@ -11,9 +11,9 @@ async function fetchArtistData(accessToken, artistName) {
   }
 
   return requestLib.get(searchApiOptions)
-  .then((body) => {
+  .then((response) => {
     try {
-      const jsonResponse = JSON.parse(body)
+      const jsonResponse = JSON.parse(response.body)
       return jsonResponse.artists.items[0].id
     } catch (_) {
       return
