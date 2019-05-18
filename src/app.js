@@ -52,13 +52,22 @@ app.get('/artistList', async function(req, res) {
 
 app.post('/processArtists', async function(req, res) {
   try {
+    const accessToken = req.cookies[accessTokenCookieKey]
     const listItems = req.body.artistsInput
       .split('\r\n')
       .filter((item) => item !== '')
-    const noDuplicateListItems = new Set(listItems)
+    const noDuplicateArtists = new Set(listItems)
 
-    // fetch the artist IDs
-    artistLib.fetchArtistData(req, res)
+    if (!accessToken) {
+      throw new Error('No access token')
+    }
+
+    const artistIds = await Promise.all([...noDuplicateArtists].map( async (artist) => {
+      return await artistLib.fetchArtistData(accessToken, artist)
+    }))
+
+    console.log(artistIds)
+    // store the processed artists
 
   } catch(err) {
     console.log(err)
