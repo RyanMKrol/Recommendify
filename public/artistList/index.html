@@ -2,13 +2,17 @@
 <html>
   <head>
     <title>Reccommendify</title>
+    <link rel="stylesheet" href="./../style/main.css">
   </head>
 
   <body>
     <div class="container">
       <form action="/processArtists" method="post">
-        <textarea name="artistsInput">Give us your list of artsists (newline separated)</textarea>
-        <input type="number" name="tracksPerArtist" placeholder="Songs per artist" value="Submit"/>
+        <h2>Which artists have been recommended?</h2>
+        <textarea name="artistsInput" rows="10" placeholder="A list of artists (newline separated)"></textarea><br/>
+        <h2>How many tracks would you like per artist?</h2>
+        <input type="number" max="10" name="tracksPerArtist" placeholder="Songs per artist (default: 3)" value="Submit"></input><br/>
+        <h2>Let's Go!</h2>
         <input type="submit" value="Submit"/>
       </form>
     </div>

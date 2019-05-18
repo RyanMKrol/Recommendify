@@ -6,7 +6,7 @@ import * as requestLib from './../RequestLib'
 
 const CLIENT_ID = 'a9333632c14a45b0ad372b5ab7a8afef'
 const CLIENT_SECRET = config.get('clientSecret')
-const REDIRECT_URL = 'http://localhost:8000/callback'
+const REDIRECT_URL = encodeURI('http://localhost:8000/callback')
 const AUTH_STATE_KEY = 'spotify_auth_state'
 const PERMISSIONS_LIST = 'user-read-private playlist-modify-public playlist-modify-private'
 
@@ -37,8 +37,8 @@ function requestApiTokens(httpRequest, httpResponse) {
   return requestLib.post(authOptions)
   .then((response) => {
     return ({
-      "accessToken": response.access_token,
-      "refreshToken": response.refresh_token
+      "accessToken": response.body.access_token,
+      "refreshToken": response.body.refresh_token
     })
   }).catch((error) => {
     httpResponse.status(500).send('Invalid Token')

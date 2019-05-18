@@ -1,0 +1,59 @@
+body {
+  background: #00b09b;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(to right, #96c93d, #00b09b);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to right, #96c93d, #00b09b); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  font-family: 'Helvetica Neue', sans-serif;
+}
+
+h1 {
+  color: #111;
+  font-size: 120px;
+  font-weight: bold;
+  letter-spacing: -1px;
+  line-height: 1;
+  text-align: center;
+}
+
+.container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+a, input[type="submit"] {
+  font-weight: bold;
+  padding: 20px;
+  border-radius: 5px;
+  border-style: solid;
+  border-color: white;
+  border-width: 1px;
+  color: inherit;
+}
+
+textarea {
+  width: 60%;
+  height: 30%;
+  outline: none;
+}
+
+input {
+  margin: 20px;
+}
+
+input::placeholder {
+  text-align: center;
+}
+
+
+input[type="number"] {
+  width: 300px;
+  height: 50px;
+}
+
+@media only screen and (max-width: 900px) {
+  h1 {
+    font-size: 60px;
+  }
+}

@@ -90,7 +90,8 @@ app.post('/processArtists', async function(req, res) {
     // add tracks to this new playlist
     playlistLib.addTracksToPlaylist(accessToken, playlistId, flattenedTopTracks)
 
-    res.send('Playlist Created!')
+    const fileLoc = path.resolve(`${__dirname}./../public/done/index.html`)
+    res.sendFile(fileLoc)
   } catch(err) {
     console.log(err)
     res.send(err)
