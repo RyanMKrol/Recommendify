@@ -5,10 +5,10 @@ import express from 'express'
 import path from 'path'
 
 import * as authLib from './Authentication'
-import * as artistLib from './ArtistData'
-import * as trackLib from './TrackData'
-import * as userLib from './UserData'
 import * as playlistLib from './PlaylistData'
+import fetchArtistIds from './ArtistData'
+import fetchTopTracks from './TrackData'
+import fetchUserId from './UserData'
 
 import {
   accessTokenCookieKey,
@@ -68,28 +68,22 @@ app.post('/processArtists', async function(req, res) {
       throw new Error('No access token')
     }
 
-    // fetch the artist IDs for a given list of artist names
-    const artistIds = await Promise.all([...noDuplicateArtists].map( async (artist) => {
-      return await artistLib.fetchArtistData(accessToken, artist)
-    }))
-    const filteredArtistIds = artistIds.filter((artistId) => artistId)
+    // fetch artist IDs
+    const artistIds = await fetchArtistIds(accessToken, [...noDuplicateArtists])
 
-    // fetch the top tracks for each artist ID
-    const topTracks = await Promise.all(filteredArtistIds.map( async (artistId) => {
-      const trackList = await trackLib.fetchArtistTopTracksData(accessToken, artistId)
-      return trackList ? trackList.slice(0, tracksPerArtist) : []
-    }))
-    const flattenedTopTracks = topTracks.flat()
+    // fetch top tracks for artists
+    const tracks = await fetchTopTracks(accessToken, artistIds, tracksPerArtist)
 
-    // fetch the user ID of the person using this site
-    const userId = await userLib.fetchUserId(accessToken)
+    // fetch current user ID to make a playlist against
+    const userId = await fetchUserId(accessToken)
 
-    // create a new playlist
+    // create playlist, and fetch ID
     const playlistId = await playlistLib.createPlaylist(accessToken, userId)
 
-    // add tracks to this new playlist
-    playlistLib.addTracksToPlaylist(accessToken, playlistId, flattenedTopTracks)
+    // add songs to playlist
+    const _ = await playlistLib.addTracksToPlaylist(accessToken, playlistId, tracks)
 
+    // send valid response
     const fileLoc = path.resolve(`${__dirname}./../public/done/index.html`)
     res.sendFile(fileLoc)
   } catch(err) {

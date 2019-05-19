@@ -1,6 +1,6 @@
 import * as requestLib from './../RequestLib'
 
-async function fetchArtistData(accessToken, artistName) {
+async function _fetchArtistData(accessToken, artistName) {
   const url = encodeURI(`https://api.spotify.com/v1/search?q=\"${artistName}\"&type=artist&limit=1`)
   const searchApiOptions = {
     url,
@@ -21,6 +21,13 @@ async function fetchArtistData(accessToken, artistName) {
   })
 }
 
-export {
-  fetchArtistData,
+async function fetchArtistIds(accessToken, artists) {
+  // fetch the artist IDs for a given list of artist names
+  const artistIds = await Promise.all(artists.map( async (artist) => {
+    return await _fetchArtistData(accessToken, artist)
+  }))
+
+  return artistIds.filter((artistId) => artistId)
 }
+
+export default fetchArtistIds

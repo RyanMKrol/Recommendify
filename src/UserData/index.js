@@ -1,1 +1,1 @@
-export * from './UserData.js'
+export { default } from './UserData.js'

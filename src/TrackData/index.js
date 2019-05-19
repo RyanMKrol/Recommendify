@@ -1,1 +1,1 @@
-export * from './TrackData.js'
+export { default } from './TrackData.js'

@@ -17,6 +17,4 @@ async function fetchUserId(accessToken) {
   })
 }
 
-export {
-  fetchUserId,
-}
+export default fetchUserId
