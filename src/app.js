@@ -62,12 +62,12 @@ app.get('/artistList', async function(req, res) {
 app.post('/processArtists', async function(req, res) {
   try {
     // fetch access token and update refresh token
-    const refreshToken = req.cookies[refreshTokenCookieKey]
-    if (!refreshToken) {
+    const currentRefreshToken = req.cookies[refreshTokenCookieKey]
+    if (!currentRefreshToken) {
       res.redirect(`/login`)
     }
 
-    const tokens = await authLib.refreshTokens(refreshToken)
+    const tokens = await authLib.refreshTokens(currentRefreshToken)
     const refreshToken = tokens.refreshToken
     const accessToken = tokens.accessToken
 

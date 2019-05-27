@@ -1,7 +1,6 @@
 import config from 'config'
 import querystring from 'querystring'
 import uuid from 'uuid/v1'
-import request from 'request'
 
 import * as requestLib from './../RequestLib'
 
