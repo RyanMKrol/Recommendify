@@ -1,6 +1,7 @@
 import config from 'config'
 import querystring from 'querystring'
 import uuid from 'uuid/v1'
+import request from 'request'
 
 import * as requestLib from './../RequestLib'
 
@@ -13,8 +14,6 @@ const PERMISSIONS_LIST = 'user-read-private playlist-modify-public playlist-modi
 // user permits us to act on their behalf
 function requestInitialAuth(httpResponse) {
     const state = uuid()
-
-    httpResponse.cookie(AUTH_STATE_KEY, state)
 
     const authoriseParams = querystring.stringify({
       response_type: 'code',
@@ -29,11 +28,16 @@ function requestInitialAuth(httpResponse) {
 
 // double handshake - we use a code passed back from Spotify to fetch the access tokens
 function requestApiTokens(httpRequest, httpResponse) {
-  validateState(httpRequest, httpResponse)
-
-  httpResponse.clearCookie(AUTH_STATE_KEY)
   const authOptions = buildAuthOptions(httpRequest)
+  return fetchTokens(authOptions)
+}
 
+function refreshTokens(refreshToken) {
+  const authOptions = buildRefreshAuthOptions(refreshToken)
+  return fetchTokens(authOptions)
+}
+
+function fetchTokens(authOptions) {
   return requestLib.post(authOptions)
   .then((response) => {
     return ({
@@ -41,18 +45,22 @@ function requestApiTokens(httpRequest, httpResponse) {
       "refreshToken": response.body.refresh_token
     })
   }).catch((error) => {
-    httpResponse.status(500).send('Invalid Token')
-    throw new Error('Invalid Token provided')
+    throw new Error('Could not fetch the tokens we need')
   })
 }
+function buildRefreshAuthOptions(refreshToken) {
+  const authToken = new Buffer(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64')
 
-function validateState(httpRequest, httpResponse) {
-  const state = httpRequest.query.state
-  const storedState = httpRequest.cookies ? httpRequest.cookies[AUTH_STATE_KEY] : null
-
-  if (!state || state !== storedState) {
-    httpResponse.status(500).send('Internal Server Error')
-    throw new Error('Invalid Token provided')
+  return {
+    url: 'https://accounts.spotify.com/api/token',
+    form: {
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken
+    },
+    headers: {
+      'Authorization': `Basic ${authToken}`
+    },
+    json: true
   }
 }
 
@@ -76,5 +84,6 @@ function buildAuthOptions(httpRequest) {
 
 export {
   requestInitialAuth,
-  requestApiTokens
+  requestApiTokens,
+  refreshTokens,
 }

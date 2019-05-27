@@ -10,6 +10,8 @@ import fetchArtistIds from './ArtistData'
 import fetchTopTracks from './TrackData'
 import fetchUserId from './UserData'
 
+import { logger } from './Utils'
+
 import {
   accessTokenCookieKey,
   refreshTokenCookieKey,
@@ -25,69 +27,94 @@ app.use(express.static(__dirname + './../public'))
 
 // initial permissions fetching
 app.get('/login', function(req, res) {
+
+  logger.info('Logging in')
   authLib.requestInitialAuth(res)
 })
 
 app.get('/callback', async function(req, res) {
   try {
+    logger.info('Fetching the access tokens')
+
     // getting specific tokens for API requests
     const tokens = await authLib.requestApiTokens(req, res)
 
-    const access_token = tokens.accessToken
-    const refresh_token = tokens.refreshToken
-
-    res.cookie(accessTokenCookieKey, access_token)
-    res.cookie(refreshTokenCookieKey, refresh_token)
+    res.cookie(refreshTokenCookieKey, tokens.refreshToken)
 
     res.redirect(`/artistList`)
   } catch(err) {
-    console.log(err)
+    logger.fatal(`Issue fetching access tokens with error: ${err}`)
   }
 })
 
 app.get('/artistList', async function(req, res) {
   try {
+    logger.info('Redirecting to artistList page')
+
     const fileLoc = path.resolve(`${__dirname}./../public/artistList/index.html`)
+
     res.sendFile(fileLoc)
   } catch(err) {
-    console.log(err)
+    logger.fatal(`Issue redirecting to artistList page with error: ${err}`)
   }
 })
 
 app.post('/processArtists', async function(req, res) {
   try {
-    // parse the data from the form/site
-    const accessToken = req.cookies[accessTokenCookieKey]
+    // fetch access token and update refresh token
+    const refreshToken = req.cookies[refreshTokenCookieKey]
+    if (!refreshToken) {
+      res.redirect(`/login`)
+    }
+
+    const tokens = await authLib.refreshTokens(refreshToken)
+    const refreshToken = tokens.refreshToken
+    const accessToken = tokens.accessToken
+
+    // refresh token may have changed so let's update
+    res.cookie(refreshTokenCookieKey, refreshToken)
+
+    // if we have no access token, we can't do anything, so error
+    if (!accessToken) {
+      throw new Error('No access token')
+    }
+
+    // fetch data from the page/request
     const listItems = req.body.artistsInput
       .split('\r\n')
       .filter((item) => item !== '')
     const tracksPerArtist = req.body.tracksPerArtist || defaultTracksPerArtist
     const noDuplicateArtists = new Set(listItems)
 
-    if (!accessToken) {
-      throw new Error('No access token')
-    }
+    logger.info(`List items we're using: ${listItems}`)
+    logger.info(`Tracks per artist: ${tracksPerArtist}`)
 
     // fetch artist IDs
     const artistIds = await fetchArtistIds(accessToken, [...noDuplicateArtists])
+    logger.info(`Artist IDs: ${artistIds}`)
 
     // fetch top tracks for artists
     const tracks = await fetchTopTracks(accessToken, artistIds, tracksPerArtist)
+    logger.info(`Tracks: ${tracks}`)
 
     // fetch current user ID to make a playlist against
     const userId = await fetchUserId(accessToken)
+    logger.info(`User ID: ${userId}`)
 
     // create playlist, and fetch ID
     const playlistId = await playlistLib.createPlaylist(accessToken, userId)
+    logger.info(`Playlist ID: ${playlistId}`)
 
     // add songs to playlist
     const _ = await playlistLib.addTracksToPlaylist(accessToken, playlistId, tracks)
+    logger.info(`Finished adding tracks to playlist`)
 
     // send valid response
     const fileLoc = path.resolve(`${__dirname}./../public/done/index.html`)
     res.sendFile(fileLoc)
   } catch(err) {
     console.log(err)
+    logger.fatal(`Issue processing artistList with error: ${err}`)
     res.send(err)
   }
 })
