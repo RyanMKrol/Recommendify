@@ -20,7 +20,10 @@ async function createPlaylist(accessToken, userId) {
 
   return requestLib.post(createPlaylistApiOptions)
   .then((response) => {
-    return response.body.id
+    return {
+      id: response.body.id,
+      href: response.body.external_urls.spotify,
+    }
   })
 }
 

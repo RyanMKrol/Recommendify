@@ -3,6 +3,7 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import express from 'express'
 import path from 'path'
+import querystring from 'querystring'
 
 import * as authLib from './Authentication'
 import * as playlistLib from './PlaylistData'
@@ -71,9 +72,6 @@ app.post('/processArtists', async function(req, res) {
     const refreshToken = tokens.refreshToken
     const accessToken = tokens.accessToken
 
-    // refresh token may have changed so let's update
-    res.cookie(refreshTokenCookieKey, refreshToken)
-
     // if we have no access token, we can't do anything, so error
     if (!accessToken) {
       throw new Error('No access token')
@@ -102,21 +100,25 @@ app.post('/processArtists', async function(req, res) {
     logger.info(`User ID: ${userId}`)
 
     // create playlist, and fetch ID
-    const playlistId = await playlistLib.createPlaylist(accessToken, userId)
-    logger.info(`Playlist ID: ${playlistId}`)
+    const playlistInfo = await playlistLib.createPlaylist(accessToken, userId)
+    logger.info(`Playlist Info: ${playlistInfo}`)
 
     // add songs to playlist
-    const _ = await playlistLib.addTracksToPlaylist(accessToken, playlistId, tracks)
+    const _ = await playlistLib.addTracksToPlaylist(accessToken, playlistInfo.id, tracks)
     logger.info(`Finished adding tracks to playlist`)
 
     // send valid response
-    const fileLoc = path.resolve(`${__dirname}./../public/done/index.html`)
-    res.sendFile(fileLoc)
+    res.redirect(`/done?${querystring.stringify({playlistUri: playlistInfo.href})}`)
   } catch(err) {
     console.log(err)
     logger.fatal(`Issue processing artistList with error: ${err}`)
     res.send(err)
   }
+})
+
+app.get('/done', async function(req, res) {
+  const fileLoc = path.resolve(`${__dirname}./../public/done/index.html`)
+  res.sendFile(fileLoc)
 })
 
 app.listen(8000, () => {

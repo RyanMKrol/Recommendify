@@ -5,8 +5,11 @@ body {
   font-family: 'Helvetica Neue', sans-serif;
 }
 
-h1 {
+.titleHeading {
   color: #111;
+}
+
+h1 {
   font-size: 120px;
   font-weight: bold;
   letter-spacing: -1px;
@@ -22,7 +25,7 @@ h1 {
   vertical-align: middle;
 }
 
-a, input[type="submit"] {
+.aButton, input[type="submit"] {
   font-weight: bold;
   padding: 20px;
   border-radius: 5px;

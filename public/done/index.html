@@ -2,12 +2,20 @@
 <html>
   <head>
     <title>Recommendify</title>
-    <link rel="stylesheet" href="style/main.css">
+    <link rel="stylesheet" href="./../style/main.css">
   </head>
 
   <body>
     <div class="container">
-      <h1>Playlist Created!</h1>
+      <a id ='playlistLink' href="/">
+        <h1>Playlist Created!</h1>
+      </a>
     </div>
   </body>
+  <script>
+    const url = new URL(window.location.href);
+    const playlistUri = url.searchParams.get("playlistUri");
+
+    document.getElementById("playlistLink").href=playlistUri;
+  </script>
 </html>
