@@ -9,5 +9,5 @@ git pull
 npm install
 npm run build
 pm2 delete Recommendify
-pm2 start build/src/app.js --name Recommendify
+pm2 start lib/app.js --name Recommendify
 pm2 save
