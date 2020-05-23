@@ -1,0 +1,13 @@
+AES_PASS=$1
+
+cd ~
+rm -rf Recommendify
+git clone https://github.com/RyanMKrol/Recommendify.git
+cd Recommendify
+openssl aes-256-cbc -d -a -in config/default.json.enc -out config/default.json -k $AES_PASS
+git pull
+npm install
+npm run build
+pm2 delete Recommendify
+pm2 start build/src/app.js --name Recommendify
+pm2 save
