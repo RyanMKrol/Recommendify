@@ -16,19 +16,19 @@ import { logger } from './Utils'
 import {
   accessTokenCookieKey,
   refreshTokenCookieKey,
-  defaultTracksPerArtist,
+  defaultTracksPerArtist
 } from './constants'
 
 const app = express()
 
-app.use(express.static(__dirname + './../public'))
+app
+  .use(express.static(__dirname + './../public'))
   .use(cors())
   .use(cookieParser())
-  .use(bodyParser.urlencoded({extended: false}))
+  .use(bodyParser.urlencoded({ extended: false }))
 
 // initial permissions fetching
 app.get('/login', function(req, res) {
-
   logger.info('Logging in')
   authLib.requestInitialAuth(res)
 })
@@ -43,7 +43,7 @@ app.get('/callback', async function(req, res) {
     res.cookie(refreshTokenCookieKey, tokens.refreshToken)
 
     res.redirect(`/artistList`)
-  } catch(err) {
+  } catch (err) {
     logger.fatal(`Issue fetching access tokens with error: ${err}`)
   }
 })
@@ -52,10 +52,12 @@ app.get('/artistList', async function(req, res) {
   try {
     logger.info('Redirecting to artistList page')
 
-    const fileLoc = path.resolve(`${__dirname}./../public/artistList/index.html`)
+    const fileLoc = path.resolve(
+      `${__dirname}./../public/artistList/index.html`
+    )
 
     res.sendFile(fileLoc)
-  } catch(err) {
+  } catch (err) {
     logger.fatal(`Issue redirecting to artistList page with error: ${err}`)
   }
 })
@@ -80,7 +82,7 @@ app.post('/processArtists', async function(req, res) {
     // fetch data from the page/request
     const listItems = req.body.artistsInput
       .split('\r\n')
-      .filter((item) => item !== '')
+      .filter(item => item !== '')
     const tracksPerArtist = req.body.tracksPerArtist || defaultTracksPerArtist
     const noDuplicateArtists = new Set(listItems)
 
@@ -104,12 +106,18 @@ app.post('/processArtists', async function(req, res) {
     logger.info(`Playlist Info: ${playlistInfo}`)
 
     // add songs to playlist
-    const _ = await playlistLib.addTracksToPlaylist(accessToken, playlistInfo.id, tracks)
+    const _ = await playlistLib.addTracksToPlaylist(
+      accessToken,
+      playlistInfo.id,
+      tracks
+    )
     logger.info(`Finished adding tracks to playlist`)
 
     // send valid response
-    res.redirect(`/done?${querystring.stringify({playlistUri: playlistInfo.href})}`)
-  } catch(err) {
+    res.redirect(
+      `/done?${querystring.stringify({ playlistUri: playlistInfo.href })}`
+    )
+  } catch (err) {
     console.log(err)
     logger.fatal(`Issue processing artistList with error: ${err}`)
     res.send(err)
