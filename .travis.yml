@@ -7,9 +7,9 @@ deploy:
   provider: script
   script: bash scripts/deploy $AES_PASS
   on:
-    branch: main
+    branch: master
   skip_cleanup: true
 branches:
   only:
-    - main
+    - master
     - development
