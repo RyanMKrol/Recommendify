@@ -1,11 +1,12 @@
-import config from 'config'
 import querystring from 'querystring'
 import uuid from 'uuid/v1'
+import fs from 'fs';
+
+const CLIENT_SECRET = JSON.parse(fs.readFileSync(`${__dirname}/../../credentials/spotify.json`)).clientSecret;
 
 import * as requestLib from './../RequestLib'
 
 const CLIENT_ID = 'a9333632c14a45b0ad372b5ab7a8afef'
-const CLIENT_SECRET = config.get('clientSecret')
 const REDIRECT_URL = encodeURI('http://recommendify.xyz/callback')
 const AUTH_STATE_KEY = 'spotify_auth_state'
 const PERMISSIONS_LIST = 'user-read-private playlist-modify-public playlist-modify-private'
